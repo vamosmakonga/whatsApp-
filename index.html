@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vamos MAKONGA Shop - Kamina, Haut-Lomami</title>
+<meta property="og:title" content="Vamos MAKONGA Shop - Kamina">
+<meta property="og:description" content="Sacs, Montres, Chaussures - Stock réel - Commande 1 clic WhatsApp - Livraison Kamina">
+<meta property="og:image" content="https://vamos-shop.vercel.app/vitrine.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:#f1f5f9}
+.header{background:#0f172a;color:white;padding:32px 20px;text-align:center}
+.header h1{font-size:30px;font-weight:900}
+.header p{opacity:.7;margin-top:6px;font-size:14px}
+.badge{background:#25D366;color:white;padding:7px 14px;border-radius:30px;font-size:12px;font-weight:800;display:inline-block;margin-top:10px}
+
+/* CACHÉ PAR DÉFAUT - VISIBLE SEULEMENT POUR ADMIN */
+#adminBar{display:none;background:white;max-width:600px;margin:-18px auto 15px;padding:16px;border-radius:20px;flex-direction:column;gap:10px;box-shadow:0 12px 32px rgba(0,0,0,.14);position:relative;z-index:2;border:2px dashed #25D366}
+#adminBar.show{display:flex}
+.admin-label{background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;text-align:center}
+.row{display:flex;gap:10px}
+.btn-share{flex:1;padding:15px;border-radius:14px;border:none;font-weight:900;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.btn-fb{background:linear-gradient(135deg,#1877F2,#0d65d9);color:white}
+.btn-wa{background:linear-gradient(135deg,#25D366,#1ebe57);color:white}
+.btn-dl{background:#0f172a;color:white;width:100%;padding:14px;border-radius:14px;border:none;font-weight:800;cursor:pointer}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:15px;max-width:600px;margin:auto}
+.card{background:white;border-radius:20px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.06);position:relative}
+.card img{width:100%;height:165px;object-fit:cover}
+.info{padding:11px}
+.info h3{font-size:13px;min-height:32px}
+.stock{font-size:10px;padding:4px 8px;border-radius:20px;font-weight:700;display:inline-block;margin-top:5px}
+.en-stock{background:#dcfce7;color:#166534}
+.faible{background:#fef9c3;color:#854d0e}
+.price{font-weight:900;margin-top:4px;font-size:17px}
+.desc{font-size:11px;color:#64748b;margin-top:3px}
+.btn{width:100%;background:#111;color:white;border:none;padding:11px;border-radius:12px;font-weight:800;margin-top:6px;cursor:pointer}
+.btn-save{width:100%;background:#f8fafc;color:#334155;border:1px solid #e2e8f0;padding:9px;border-radius:11px;font-weight:700;margin-top:6px;font-size:11px;cursor:pointer}
+.footer{text-align:center;padding:25px;font-size:11px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="header" onclick="tapAdmin()">
+<h1 id="logo">Vamos MAKONGA Shop</h1>
+<p>📍 Kamina, Haut-Lomami • Livraison à domicile</p>
+<div class="badge">+243 824 326 060 • WhatsApp</div>
+</div>
+
+<!-- BOUTONS ADMIN - CACHÉS POUR LES CLIENTS -->
+<div id="adminBar">
+<div class="admin-label">🔐 MODE ADMIN - Toi seul vois ça</div>
+<div class="row">
+<button class="btn-share btn-fb" onclick="shareFb()">📘 Partager sur Facebook</button>
+<button class="btn-share btn-wa" onclick="shareWa()">💬 Partager sur WhatsApp</button>
+</div>
+<button class="btn-dl" onclick="downloadNouveautes()">📥 Télécharger nouveautés galerie</button>
+<button class="btn-dl" style="background:#25D366" onclick="location.href='admin.html'">➕ Uploader nouveau produit</button>
+<button style="background:none;border:none;color:#ef4444;font-size:11px;margin-top:4px;cursor:pointer" onclick="logoutAdmin()">Déconnexion admin</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="footer">Vamos MAKONGA Shop - Kamina - Haut-Lomami<br>WhatsApp: +243 824 326 060</div>
+
+<script>
+const WA="243824326060"; const LINK="https://vamos-shop.vercel.app";
+const defaultProducts=[
+{name:"Sac à Main Cuir Noir",price:25,stock:12,desc:"Cuir véritable, 2 poches",image:"https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600",isNew:true},
+{name:"Montre Homme Class",price:18,stock:3,desc:"Acier inox, étanche",image:"https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600",isNew:true},
+{name:"Nike Air Force",price:45,stock:8,desc:"Pointure 40-45",image:"https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",isNew:false},
+{name:"Lunette Tendance",price:12,stock:20,desc:"UV 400, léger",image:"https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600",isNew:false}
+];
+const saved = JSON.parse(localStorage.getItem('vamos_products') || '[]');
+const products = saved.length>0 ? saved : defaultProducts;
+
+// GESTION MODE ADMIN
+let tapCount=0;
+function tapAdmin(){tapCount++; if(tapCount>=5){tapCount=0; const code=prompt('Code admin ?'); if(code==='8243'){loginAdmin();} } setTimeout(()=>tapCount=0,3000);}
+
+function loginAdmin(){localStorage.setItem('isAdmin','true'); document.getElementById('adminBar').classList.add('show'); alert('Mode admin activé ✅');}
+function logoutAdmin(){localStorage.removeItem('isAdmin'); document.getElementById('adminBar').classList.remove('show'); history.replaceState(null,'',LINK); alert('Déconnecté');}
+function checkAdmin(){
+const urlParams = new URLSearchParams(window.location.search);
+if(urlParams.get('admin')==='makonga'){loginAdmin(); history.replaceState(null,'',LINK); return;}
+if(localStorage.getItem('isAdmin')==='true'){document.getElementById('adminBar').classList.add('show');}
+}
+
+function render(){
+const g=document.getElementById('grid'); g.innerHTML="";
+products.forEach((p,i)=>{
+const cls=p.stock>3?'en-stock':'faible'; const txt=p.stock>3?`● En stock - ${p.stock}`:`● Faible - ${p.stock}`;
+const badgeNew=p.isNew?`<span style="position:absolute;top:8px;left:8px;background:#ef4444;color:white;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;z-index:1">NOUVEAU</span>`:"";
+g.innerHTML+=`<div class="card" style="position:relative">${badgeNew}<img src="${p.image}"><div class="info"><h3>${p.name}</h3><span class="stock ${cls}">${txt}</span><p class="desc">${p.desc}</p><p class="price">${p.price}$</p><button class="btn" onclick="order(${i})">Commander WhatsApp</button><button class="btn-save" onclick="downloadImage('${p.image}','${p.name}')">📥 Galerie</button></div></div>`;
+});
+}
+async function downloadImage(url,name){try{const r=await fetch(url);const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name.replace(/\s/g,'_')+'.jpg';document.body.appendChild(a);a.click();a.remove();}catch(e){window.open(url,'_blank');}}
+async function downloadNouveautes(){const news=products.filter(p=>p.isNew); if(news.length==0){alert('Pas de nouveautés');return;} for(let p of news){await downloadImage(p.image,p.name); await new Promise(r=>setTimeout(r,600));} alert(news.length+' photos enregistrées !');}
+function order(i){const p=products[i]; const t=`Bonjour Vamos MAKONGA Shop Kamina 👋\n\n📦 ${p.name}\n💰 ${p.price}$\n📊 Stock: ${p.stock}\n\nLien: ${LINK}`; window.open(`https://wa.me/${WA}?text=${encodeURIComponent(t)}`,'_blank');}
+function shareFb(){window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(LINK)}`,'_blank');}
+function shareWa(){window.open(`https://wa.me/?text=${encodeURIComponent('🛍️ Vamos MAKONGA Shop Kamina\n📦 50 produits dès 10$\n👉 '+LINK+'\n+243824326060')}`,'_blank');}
+
+checkAdmin(); render();
+</script>
+</body>
+</html>

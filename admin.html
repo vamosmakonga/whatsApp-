@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - Vamos MAKONGA Shop Kamina</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:#f1f5f9;min-height:100vh}
+.header{background:#0f172a;color:white;padding:24px 20px;text-align:center}
+.header h2{font-size:22px;font-weight:900}
+.header p{opacity:.7;font-size:13px;margin-top:4px}
+.container{max-width:500px;margin:-12px auto 20px;background:white;border-radius:24px;padding:20px;box-shadow:0 16px 40px rgba(0,0,0,.12)}
+.label{font-size:11px;font-weight:800;color:#64748b;margin:14px 0 4px;letter-spacing:.5px;text-transform:uppercase}
+input,textarea{width:100%;padding:14px 14px;border-radius:14px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:14px;outline:none;transition:.2s}
+input:focus,textarea:focus{border-color:#0f172a;background:white}
+.input-file{border:2px dashed #cbd5e1;background:#f8fafc;padding:18px;text-align:center;cursor:pointer}
+.preview{margin-top:12px;text-align:center}
+.preview img{width:100%;max-height:260px;object-fit:cover;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.check{display:flex;align-items:center;gap:8px;margin-top:12px;background:#fef2f2;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:700;color:#991b1b}
+.btn{width:100%;padding:15px;border:none;border-radius:14px;font-weight:900;font-size:14px;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn:active{transform:scale(.97)}
+.btn-main{background:#0f172a;color:white;box-shadow:0 6px 16px rgba(15,23,42,.3)}
+.btn-fb{background:linear-gradient(135deg,#1877F2,#0d65d9);color:white}
+.btn-wa{background:linear-gradient(135deg,#25D366,#1ebe57);color:white}
+.btn-gh{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0}
+.btn-back{background:white;color:#0f172a;border:1.5px solid #0f172a}
+.card-list{background:white;padding:12px;border-radius:14px;margin-top:10px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card-list img{height:60px;width:60px;object-fit:cover;border-radius:10px}
+.card-list b{font-size:13px}
+.badge-admin{background:#25D366;color:white;padding:5px 12px;border-radius:30px;font-size:11px;font-weight:800;display:inline-block;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h2>🔐 Admin Vamos MAKONGA</h2>
+<p>Kamina, Haut-Lomami • Mode privé</p>
+<div class="badge-admin">+243 824 326 060</div>
+</div>
+
+<div class="container">
+<!-- BOUTONS FACEBOOK / WHATSAPP POUR ADMIN -->
+<div style="display:flex;gap:10px">
+<button class="btn btn-fb" style="flex:1" onclick="shareFb()">📘 Facebook</button>
+<button class="btn btn-wa" style="flex:1" onclick="shareWa()">💬 WhatsApp</button>
+</div>
+<button class="btn btn-back" onclick="location.href='/'">⬅️ Voir ma boutique</button>
+
+<div class="label">1. Photo du produit *</div>
+<input type="file" id="file" accept="image/*" class="input-file">
+<div class="preview" id="preview"><p style="font-size:12px;color:#94a3b8">Aucune photo</p></div>
+
+<div class="label">2. Infos produit</div>
+<input id="name" placeholder="Nom : ex Sac à main cuir">
+<div style="display:flex;gap:8px;margin-top:8px">
+<input id="price" type="number" placeholder="Prix $ ex: 25" style="flex:1">
+<input id="stock" type="number" placeholder="Stock ex: 10" style="flex:1">
+</div>
+<textarea id="desc" rows="2" placeholder="Description : ex Cuir véritable, 2 poches" style="margin-top:8px"></textarea>
+
+<div class="check"><input type="checkbox" id="isNew" checked style="width:18px;height:18px"> Marquer comme NOUVEAU (badge rouge + téléchargement galerie)</div>
+
+<button class="btn btn-main" onclick="addProduct()">✅ Ajouter à ma boutique</button>
+
+<h3 style="margin-top:22px;font-size:14px;font-weight:900">📦 Produits sur ton téléphone (<span id="count">0</span>)</h3>
+<div id="list"></div>
+
+<button class="btn btn-gh" onclick="copyForGithub()">📋 Copier code pour GitHub (définitif)</button>
+<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px">Copie ce code 1 fois par semaine dans GitHub pour que tout le monde le voie</p>
+</div>
+
+<script>
+const LINK="https://vamos-shop.vercel.app";
+let products = JSON.parse(localStorage.getItem('vamos_products') || '[]');
+let currentImage = "";
+
+document.getElementById('file').addEventListener('change', e=>{
+const file = e.target.files[0];
+if(!file) return;
+const reader = new FileReader();
+reader.onload = ev=>{
+currentImage = ev.target.result;
+document.getElementById('preview').innerHTML = `<img src="${currentImage}"><p style="font-size:12px;color:#22c55e;margin-top:6px;font-weight:700">✅ Photo prête</p>`;
+};
+reader.readAsDataURL(file);
+});
+
+function addProduct(){
+const p = {
+name: document.getElementById('name').value.trim(),
+price: Number(document.getElementById('price').value),
+stock: Number(document.getElementById('stock').value),
+desc: document.getElementById('desc').value.trim(),
+isNew: document.getElementById('isNew').checked,
+image: currentImage
+};
+if(!p.name || !p.price || !p.image){alert('⚠️ Remplis nom, prix et photo'); return;}
+products.unshift(p);
+localStorage.setItem('vamos_products', JSON.stringify(products));
+renderList();
+alert('✅ Produit ajouté ! Il est déjà visible sur vamos-shop.vercel.app');
+document.getElementById('name').value=""; document.getElementById('price').value=""; document.getElementById('stock').value=""; document.getElementById('desc').value=""; document.getElementById('preview').innerHTML='<p style="font-size:12px;color:#94a3b8">Aucune photo</p>'; currentImage="";
+}
+
+function renderList(){
+document.getElementById('count').innerText=products.length;
+document.getElementById('list').innerHTML = products.length===0 ? '<p style="font-size:12px;color:#94a3b8;margin-top:10px">Aucun produit ajouté</p>' : products.map((p,i)=>`<div class="card-list"><img src="${p.image}"><div style="flex:1"><b>${p.name}</b><br><span style="font-size:12px;color:#64748b">${p.price}$ • Stock ${p.stock} ${p.isNew?'• 🔴 NOUVEAU':''}</span></div><button onclick="del(${i})" style="background:#fef2f2;color:#ef4444;border:none;padding:8px 10px;border-radius:10px;font-weight:800;cursor:pointer">X</button></div>`).join('');
+}
+function del(i){if(!confirm('Supprimer ?'))return; products.splice(i,1); localStorage.setItem('vamos_products', JSON.stringify(products)); renderList();}
+function copyForGithub(){
+const code = JSON.stringify(products, null, 2);
+navigator.clipboard.writeText(code).then(()=>alert('✅ Code copié ! Colle-le dans GitHub > index.html > defaultProducts')).catch(()=>{prompt('Copie ce code:',code)});
+}
+function shareFb(){window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(LINK)}`,'_blank');}
+function shareWa(){window.open(`https://wa.me/?text=${encodeURIComponent('🛍️ Vamos MAKONGA Shop Kamina, Haut-Lomami\n📦 Nouveaux produits dès 10$\n👉 '+LINK+'\n+243824326060')}`,'_blank');}
+
+renderList();
+</script>
+</body>
+</html>
